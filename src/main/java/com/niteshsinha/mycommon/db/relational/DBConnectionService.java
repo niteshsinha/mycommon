@@ -7,10 +7,11 @@ import java.sql.SQLException;
 import org.slf4j.Logger;
 
 import com.niteshsinha.mycommon.config.ConfigManager;
-import com.niteshsinha.mycommon.db.relational.common.DBConnectionPoolTypeEnum;
+import com.niteshsinha.mycommon.db.relational.common.DatabaseEnum;
 import com.niteshsinha.mycommon.db.relational.config.DBConfig;
+import com.niteshsinha.mycommon.db.relational.config.MysqlDbConfig;
 import com.niteshsinha.mycommon.db.relational.factory.ConnectionManagerFactory;
-import com.niteshsinha.mycommon.db.relational.manager.DBConfigManager;
+import com.niteshsinha.mycommon.db.relational.manager.MysqlDbConfigManager;
 import com.niteshsinha.mycommon.db.relational.provider.ConnectionProvider;
 import com.niteshsinha.mycommon.exception.DBException;
 import com.niteshsinha.mycommon.logging.BaseLoggerProvider;
@@ -66,7 +67,7 @@ public class DBConnectionService {
 		}
 	}
 	
-	private void testDBConnection(DBConnectionPoolTypeEnum poolType, DBConfig dbConfig) throws DBException{
+	private void testDBConnection(DatabaseEnum poolType, DBConfig dbConfig) throws DBException{
 		//for(int i=0;i<2;i++){                                         
 			Connection connection = null;
 			PreparedStatement pstmt = null;
@@ -119,16 +120,18 @@ public class DBConnectionService {
 
 	}
 
-	public synchronized void init(DBConnectionPoolTypeEnum poolType) throws DBException{
+	public synchronized void init(DatabaseEnum poolType) throws DBException{
 		if (state == State.CREATED || state == State.INITIALIZED) {
-			DBConfig dbConfig;
-			if(DBConnectionPoolTypeEnum.DB_CONNECTION_POOL_MODE_GLOBAL == poolType){
-				dbConfig = getGlobalDBConfig();
-			}else if(DBConnectionPoolTypeEnum.DB_CONNECTION_POOL_MODE_LOCAL == poolType) {
-				dbConfig = getLocalDBConfig();
-			}else{
-				throw new DBException("Unsupported connection pool type:" + poolType.getDBConnectionPoolTypeName());
-			}
+			DBConfig dbConfig = getMysqlConfig();
+			
+//			if(DatabaseEnum.DB_CONNECTION_POOL_MODE_GLOBAL == poolType){
+//				dbConfig = getGlobalDBConfig();
+//			}else if(DatabaseEnum.DB_CONNECTION_POOL_MODE_LOCAL == poolType) {
+//				dbConfig = getLocalDBConfig();
+//			}else{
+//				throw new DBException("Unsupported connection pool type:" + poolType.getDBConnectionPoolTypeName());
+//			}
+			
 			
 			ConnectionManagerFactory.getInstance().createConnectionManager(poolType, dbConfig);
 			
@@ -142,17 +145,17 @@ public class DBConnectionService {
 	 * This method is added to support custom dbConfig object, instead of reading it from file
 	 * For Bug 45997 - Use single db connection in csrm
 	 */
-	public synchronized void init(DBConnectionPoolTypeEnum poolType, DBConfig dbConfig) throws DBException{
+	public synchronized void init(DatabaseEnum dbType, DBConfig dbConfig) throws DBException{
 		if (state == State.CREATED || state == State.INITIALIZED) {
-			if(DBConnectionPoolTypeEnum.DB_CONNECTION_POOL_MODE_GLOBAL == poolType){
+			if(DatabaseEnum.DB_MYSQL == dbType){
 //				dbConfig = getGlobalDBConfig();
-			}else if(DBConnectionPoolTypeEnum.DB_CONNECTION_POOL_MODE_LOCAL == poolType) {
+			}else if(DatabaseEnum.DB_PSQL == dbType) {
 	//			dbConfig = getLocalDBConfig();
 			}else{
-				throw new DBException("Unsupported connection pool type:" + poolType.getDBConnectionPoolTypeName());
+				throw new DBException("Unsupported Database:" + dbType.getDatabaseName());
 			}
 			
-			ConnectionManagerFactory.getInstance().createConnectionManager(poolType, dbConfig);
+			ConnectionManagerFactory.getInstance().createConnectionManager(dbType, dbConfig);
 			
 			setState(State.INITIALIZED);
 		} else {
@@ -160,41 +163,51 @@ public class DBConnectionService {
 		}
 	}
 	
-	public ConnectionProvider getConnectionProvider(DBConnectionPoolTypeEnum poolType) {
-		return ConnectionManagerFactory.getInstance().getConnectionProvider(poolType);
+	public ConnectionProvider getConnectionProvider(DatabaseEnum dbType) {
+		return ConnectionManagerFactory.getInstance().getConnectionProvider(dbType);
 	}
 
-	public ConfigManager<DBConfig> getConfigManager(DBConnectionPoolTypeEnum poolType) throws DBException{
-		if(DBConnectionPoolTypeEnum.DB_CONNECTION_POOL_MODE_GLOBAL == poolType){
-			return DBConfigManager.getInstance().getGlobalConfigManager();
-		}else if(DBConnectionPoolTypeEnum.DB_CONNECTION_POOL_MODE_LOCAL == poolType) {
-			return DBConfigManager.getInstance().getLocalConfigManager();
+	public ConfigManager<MysqlDbConfig> getConfigManager(DatabaseEnum db) throws DBException{
+//		if(DatabaseEnum.DB_MYSQL == db){
+//			return MysqlDbConfigManager.getInstance().getConfigManager();
+//		}else if(DatabaseEnum.DB_MONGO == db) {
+//			return DBConfigManager.getInstance().getLocalConfigManager();
+//		}else{
+//			throw new DBException("Unsupported connection pool type:" + poolType.getDBConnectionPoolTypeName());
+//		}
+		return MysqlDbConfigManager.getInstance().getConfigManager();
+	}
+
+//	public DBConfig getGlobalDBConfig() {
+//		DBConfigManager.getInstance().loadGlobalDBConfig();
+//		return DBConfigManager.getInstance().getGlobalConfigManager().getConfig();
+//	}
+//	
+	public DBConfig getPsqlConfig() {
+		/*
+		 * TODO:create a PsqlDbConfigManager and updated below.
+		 */
+		MysqlDbConfigManager.getInstance().loadDbConfig();
+		return MysqlDbConfigManager.getInstance().getConfigManager().getConfig();
+	}
+	
+	public MysqlDbConfig getMysqlConfig() {
+		MysqlDbConfigManager.getInstance().loadDbConfig();
+		return MysqlDbConfigManager.getInstance().getConfigManager().getConfig();
+	}
+	
+	
+	public DBConfig getDBConfig(DatabaseEnum dbType) throws DBException{
+		if(DatabaseEnum.DB_MYSQL == dbType){
+			return getMysqlConfig();
+		}else if(DatabaseEnum.DB_PSQL == dbType) {
+			return getMysqlConfig();
 		}else{
-			throw new DBException("Unsupported connection pool type:" + poolType.getDBConnectionPoolTypeName());
+			throw new DBException("Unsupported Database:" + dbType.getDatabaseName());
 		}
 	}
 
-	public DBConfig getGlobalDBConfig() {
-		DBConfigManager.getInstance().loadGlobalDBConfig();
-		return DBConfigManager.getInstance().getGlobalConfigManager().getConfig();
-	}
-	
-	public DBConfig getLocalDBConfig() {
-		DBConfigManager.getInstance().loadLocalDBConfig();
-		return DBConfigManager.getInstance().getLocalConfigManager().getConfig();
-	}
-	
-	public DBConfig getDBConfig(DBConnectionPoolTypeEnum poolType) throws DBException{
-		if(DBConnectionPoolTypeEnum.DB_CONNECTION_POOL_MODE_GLOBAL == poolType){
-			return getGlobalDBConfig();
-		}else if(DBConnectionPoolTypeEnum.DB_CONNECTION_POOL_MODE_LOCAL == poolType) {
-			return getLocalDBConfig();
-		}else{
-			throw new DBException("Unsupported connection pool type:" + poolType.getDBConnectionPoolTypeName());
-		}
-	}
-
-	public void testDBConnection(DBConnectionPoolTypeEnum poolType) throws DBException{
+	public void testDBConnection(DatabaseEnum poolType) throws DBException{
 		testDBConnection(poolType, getDBConfig(poolType));
 	}
 
@@ -208,5 +221,15 @@ public class DBConnectionService {
 
 	public static DBConnectionService getInstance(){
 		return instance;
+	}
+	
+	public static void main(String[] args) {
+		try {
+			DBConnectionService.getInstance().init(DatabaseEnum.DB_MYSQL);
+			DBConnectionService.getInstance().testDBConnection(DatabaseEnum.DB_MYSQL);
+		} catch (DBException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 }

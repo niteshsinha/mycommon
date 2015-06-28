@@ -5,19 +5,20 @@ import java.util.Properties;
 import com.niteshsinha.mycommon.config.ConfigManager;
 import com.niteshsinha.mycommon.config.IConfigFactory;
 import com.niteshsinha.mycommon.db.relational.config.DBConfig;
+import com.niteshsinha.mycommon.db.relational.config.PsqlDbConfig;
 
-public class DBConfigManager {
+public class PsqlDbConfigManager {
 
 	private static final String DEFAULT_LOCAL_DB_CONFIG_FILENAME = "/mobius/pooldbconfig.properties";
 	private static final String DEFAULT_GLOBAL_DB_CONFIG_FILENAME = "/mobius/globaldbconfig.properties";
 	public static final String KEY_GLOBAL_DB_CONF_FILENAME = "mobius.global.dbconfig.ConfigFileName";
 	public static final String KEY_LOCAL_DB_CONF_FILENAME = "mobius.local.dbconfig.ConfigFileName";
 	
-	private static final DBConfigManager instance = new DBConfigManager();
+	private static final PsqlDbConfigManager instance = new PsqlDbConfigManager();
 	private ConfigManager<DBConfig> globalConfigManager = null;
 	private ConfigManager<DBConfig> localConfigManager = null;
 	
-	private DBConfigManager(){
+	private PsqlDbConfigManager(){
 		
 	}
 	
@@ -41,7 +42,7 @@ public class DBConfigManager {
 		return DEFAULT_LOCAL_DB_CONFIG_FILENAME;
 	}
 	
-	public static DBConfigManager getInstance() {
+	public static PsqlDbConfigManager getInstance() {
 		return instance;
 	}
 	
@@ -58,7 +59,7 @@ public class DBConfigManager {
 			String configFileName = getGlobalDBConfFileName();
 			this.globalConfigManager = new ConfigManager<DBConfig>(configFileName, new IConfigFactory<DBConfig>(){
 				public DBConfig createConfig(Properties dbConfigProperties){
-					return new DBConfig(dbConfigProperties);
+					return new PsqlDbConfig(dbConfigProperties);
 				}
 			});
 		}
@@ -69,7 +70,7 @@ public class DBConfigManager {
 			String configFileName = getLocalDBConfFileName();
 			this.localConfigManager = new ConfigManager<DBConfig>(configFileName, new IConfigFactory<DBConfig>(){
 				public DBConfig createConfig(Properties dbConfigProperties){
-					return new DBConfig(dbConfigProperties);
+					return new PsqlDbConfig(dbConfigProperties);
 				}
 			});
 		}

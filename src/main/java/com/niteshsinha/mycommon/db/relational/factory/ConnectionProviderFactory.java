@@ -36,7 +36,7 @@ public class ConnectionProviderFactory {
 			//return new JNDIConnectionProvider(dbConfig);
 			return null;
 		}else{
-			return null;
+			return new C3P0ConnectionProvider(dbConfig);
 		}
 	}
 }
