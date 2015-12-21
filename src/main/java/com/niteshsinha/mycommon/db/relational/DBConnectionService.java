@@ -2,6 +2,7 @@ package com.niteshsinha.mycommon.db.relational;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import org.slf4j.Logger;
@@ -78,7 +79,8 @@ public class DBConnectionService {
 				connection = DBConnectionService.getInstance().getConnectionProvider(poolType).getConnection();
 				logger.info("Successfully connected to the DB.");
 				pstmt = connection.prepareStatement("select now()");
-
+				//ResultSet rs = pstmt.executeQuery();
+				//logger.info("Time from DB: "+rs.getString(0));
 				pstmt.close();
 				connection.close();
 			}
@@ -227,6 +229,25 @@ public class DBConnectionService {
 		try {
 			DBConnectionService.getInstance().init(DatabaseEnum.DB_MYSQL);
 			DBConnectionService.getInstance().testDBConnection(DatabaseEnum.DB_MYSQL);
+			
+			Connection connection = DBConnectionService.getInstance().getConnectionProvider(DatabaseEnum.DB_MYSQL).getConnection();
+			PreparedStatement stmt=null;
+			try {
+				stmt = connection.prepareStatement("insert into tworld.scopes values (DEFAULT,1000)");
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+			int insertcount = -1;
+			try {
+				insertcount = stmt.executeUpdate();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			logger.info("Inserted: "+ insertcount);
+			
 		} catch (DBException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
