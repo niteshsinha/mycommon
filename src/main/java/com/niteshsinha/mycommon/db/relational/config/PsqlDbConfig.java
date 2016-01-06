@@ -11,7 +11,7 @@ public class PsqlDbConfig extends DBConfig {
 	private String connectionProviderType = DEFAULT_DB_CONNECTION_PROVIDER_TYPE;
 	
 	public static final String KEY_DB_CONNECTION_DRIVER_CLASS = "db.connection.driver.class";
-	private static final String DEFAULT_DB_CONNECTION_DRIVER_CLASS = "com.mysql.jdbc.Driver";
+	private static final String DEFAULT_DB_CONNECTION_DRIVER_CLASS = "org.postgresql.Driver";
 	private String driverClass = DEFAULT_DB_CONNECTION_DRIVER_CLASS;
 	
 	public static final String KEY_DB_CONNECTION_PROTOCOL_TYPE = "db.connection.protocol.type";
@@ -19,7 +19,7 @@ public class PsqlDbConfig extends DBConfig {
 	private String connectionProtocol = DEFAULT_DB_CONNECTION_PROTOCOL_TYPE;
 	
 	public static final String KEY_DB_CONNECTION_SUBPROTOCOL_TYPE = "db.connection.subprotocol.type";
-	private static final String DEFAULT_DB_CONNECTION_SUBPROTOCOL_TYPE = "mysql";
+	private static final String DEFAULT_DB_CONNECTION_SUBPROTOCOL_TYPE = "postgresql";
 	private String subProtocol = DEFAULT_DB_CONNECTION_SUBPROTOCOL_TYPE;
 	
 	public static final String KEY_DB_SUBPROTOCOL_HOST_SEPARATOR = "db.connection.subprotocol.host.separator";
@@ -31,7 +31,7 @@ public class PsqlDbConfig extends DBConfig {
 	private String host = DEFAULT_DB_HOSTNAME;
 
 	public static final String KEY_DB_PORT = "db.port";
-	private static final int DEFAULT_DB_PORT = 3306;
+	private static final int DEFAULT_DB_PORT = 5432;
 	private int port = DEFAULT_DB_PORT;
 
 	public static final String KEY_DB_USERNAME = "db.user";
@@ -43,7 +43,7 @@ public class PsqlDbConfig extends DBConfig {
 	private String password = DEFAULT_DB_PASSWORD;
 
 	public static final String KEY_DB_SERVICE_NAME = "db.serviceName";
-	private static final String DEFAULT_DB_SERVICE_NAME = "mobius";
+	private static final String DEFAULT_DB_SERVICE_NAME = "testdb";
 	private String serviceName = DEFAULT_DB_SERVICE_NAME;
 	
 	public static final String KEY_DB_JNDI_NAME = "db.jndiName";

@@ -13,6 +13,7 @@ import com.niteshsinha.mycommon.db.relational.config.DBConfig;
 import com.niteshsinha.mycommon.db.relational.config.MysqlDbConfig;
 import com.niteshsinha.mycommon.db.relational.factory.ConnectionManagerFactory;
 import com.niteshsinha.mycommon.db.relational.manager.MysqlDbConfigManager;
+import com.niteshsinha.mycommon.db.relational.manager.PsqlDbConfigManager;
 import com.niteshsinha.mycommon.db.relational.provider.ConnectionProvider;
 import com.niteshsinha.mycommon.exception.DBException;
 import com.niteshsinha.mycommon.logging.BaseLoggerProvider;
@@ -124,15 +125,15 @@ public class DBConnectionService {
 
 	public synchronized void init(DatabaseEnum poolType) throws DBException{
 		if (state == State.CREATED || state == State.INITIALIZED) {
-			DBConfig dbConfig = getMysqlConfig();
+			DBConfig dbConfig = null;
 			
-//			if(DatabaseEnum.DB_CONNECTION_POOL_MODE_GLOBAL == poolType){
-//				dbConfig = getGlobalDBConfig();
-//			}else if(DatabaseEnum.DB_CONNECTION_POOL_MODE_LOCAL == poolType) {
-//				dbConfig = getLocalDBConfig();
-//			}else{
-//				throw new DBException("Unsupported connection pool type:" + poolType.getDBConnectionPoolTypeName());
-//			}
+			if(DatabaseEnum.DB_MYSQL == poolType){
+				dbConfig = getMysqlConfig();
+			}else if(DatabaseEnum.DB_PSQL == poolType) {
+				dbConfig = getPsqlConfig();
+			}else{
+				throw new DBException("Unsupported Database:" + poolType.getDatabaseName());
+			}
 			
 			
 			ConnectionManagerFactory.getInstance().createConnectionManager(poolType, dbConfig);
@@ -186,11 +187,9 @@ public class DBConnectionService {
 //	}
 //	
 	public DBConfig getPsqlConfig() {
-		/*
-		 * TODO:create a PsqlDbConfigManager and updated below.
-		 */
-		MysqlDbConfigManager.getInstance().loadDbConfig();
-		return MysqlDbConfigManager.getInstance().getConfigManager().getConfig();
+		
+		PsqlDbConfigManager.getInstance().loadDbConfig();
+		return PsqlDbConfigManager.getInstance().getConfigManager().getConfig();
 	}
 	
 	public MysqlDbConfig getMysqlConfig() {
@@ -203,7 +202,7 @@ public class DBConnectionService {
 		if(DatabaseEnum.DB_MYSQL == dbType){
 			return getMysqlConfig();
 		}else if(DatabaseEnum.DB_PSQL == dbType) {
-			return getMysqlConfig();
+			return getPsqlConfig();
 		}else{
 			throw new DBException("Unsupported Database:" + dbType.getDatabaseName());
 		}
@@ -226,14 +225,23 @@ public class DBConnectionService {
 	}
 	
 	public static void main(String[] args) {
+		
 		try {
-			DBConnectionService.getInstance().init(DatabaseEnum.DB_MYSQL);
-			DBConnectionService.getInstance().testDBConnection(DatabaseEnum.DB_MYSQL);
 			
-			Connection connection = DBConnectionService.getInstance().getConnectionProvider(DatabaseEnum.DB_MYSQL).getConnection();
+//			DBConnectionService.getInstance().init(DatabaseEnum.DB_MYSQL);
+//			DBConnectionService.getInstance().testDBConnection(DatabaseEnum.DB_MYSQL);
+//			
+//			Connection connection = DBConnectionService.getInstance().getConnectionProvider(DatabaseEnum.DB_MYSQL).getConnection();
+			
+			DBConnectionService.getInstance().init(DatabaseEnum.DB_PSQL);
+			DBConnectionService.getInstance().testDBConnection(DatabaseEnum.DB_PSQL);
+			
+			Connection connection = DBConnectionService.getInstance().getConnectionProvider(DatabaseEnum.DB_PSQL).getConnection();
+			
+			
 			PreparedStatement stmt=null;
 			try {
-				stmt = connection.prepareStatement("insert into tworld.scopes values (DEFAULT,1000)");
+				stmt = connection.prepareStatement("insert into testdb.testtable values (1,'Nitesh','India')");
 			} catch (SQLException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
