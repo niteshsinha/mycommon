@@ -241,7 +241,8 @@ public class DBConnectionService {
 			
 			PreparedStatement stmt=null;
 			try {
-				stmt = connection.prepareStatement("insert into testdb.testtable values (1,'Nitesh','India')");
+				String sampleJson = "'{ \"name\": \"Chrome\", \"os\": \"Mac\", \"resolution\": { \"x\": 1440, \"y\": 900 } }'";
+				stmt = connection.prepareStatement("insert into crude (type,data) values ('status',"+ sampleJson +")");
 			} catch (SQLException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
