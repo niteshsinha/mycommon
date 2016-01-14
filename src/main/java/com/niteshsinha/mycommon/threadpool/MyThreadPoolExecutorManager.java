@@ -1,11 +1,15 @@
 package com.niteshsinha.mycommon.threadpool;
 
+import java.util.Properties;
 import java.util.concurrent.Future;
 
 import org.slf4j.Logger;
 
+import com.niteshsinha.mycommon.config.ConfigManager;
+import com.niteshsinha.mycommon.config.IConfigFactory;
 import com.niteshsinha.mycommon.logging.BaseLoggerProvider;
 import com.niteshsinha.mycommon.thread.ITask;
+import com.niteshsinha.mycommon.threadpool.config.MyThreadPoolConfig;
 
 public class MyThreadPoolExecutorManager {
 
@@ -16,14 +20,41 @@ public class MyThreadPoolExecutorManager {
 	
 	private final int threadPoolType;
 	
+	public static final String DEFAULT_CONF_FILENAME = "mythreadpoolconfig.properties";
+	public static final String KEY_CONF_FILENAME = "my.threadPool.ConfigFileName";
+	private final ConfigManager<MyThreadPoolConfig> configManager;
+	private final MyThreadPoolConfig myThreadPoolConfig;
+	
 	private final static MyThreadPoolExecutorManager instance = new MyThreadPoolExecutorManager();
 	private final MyThreadPool threadPoolExecutor;
 	
 	private MyThreadPoolExecutorManager() {
-		//shoudl be read from properties files
-		logger.info("Initialized a ThreadPool of 5");
-		threadPoolExecutor = new MyThreadPool(5, 10, 60, "MY_TP", true);
+		
+		String configFile = getConfigFileName();
+		this.configManager = new ConfigManager<MyThreadPoolConfig>(configFile, new IConfigFactory<MyThreadPoolConfig>() {
+
+			public MyThreadPoolConfig createConfig(Properties properties) {
+				return new MyThreadPoolConfig(properties);
+			}
+			
+		});
+		this.myThreadPoolConfig = this.configManager.getConfig();
+		logger.info("My Thread Pool Config : " + String.valueOf(this.myThreadPoolConfig));
+		//threadPoolExecutor = new MyThreadPool(25, 50, 60, "MY_TP", true);
+		threadPoolExecutor = new MyThreadPool(this.myThreadPoolConfig.getThreadPoolCoreSize(),
+				this.myThreadPoolConfig.getThreadPoolMaxSize(), 
+				0l, this.myThreadPoolConfig.getImmediateThreadPoolName(), true);
 		threadPoolType = IMMEDIATE_POOL_ONLY;
+	}
+	
+	private String getConfigFileName() {
+		Object confFileName = System.getProperties().get(KEY_CONF_FILENAME);
+
+		if (confFileName instanceof String) {
+			return (String) confFileName;
+		}
+
+		return DEFAULT_CONF_FILENAME;
 	}
 	
 	public void init() {
@@ -32,6 +63,10 @@ public class MyThreadPoolExecutorManager {
 	
 	public static MyThreadPoolExecutorManager getInstance() {
 		return instance;
+	}
+	
+	public MyThreadPoolConfig getConfig(){
+		return myThreadPoolConfig;
 	}
 	
 	public Future<?> submit(ITask task) {

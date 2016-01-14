@@ -1,6 +1,8 @@
 package com.niteshsinha.mycommon.threadpool;
 
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -10,11 +12,45 @@ public class MyThreadPoolExecutor extends ThreadPoolExecutor {
 	private final boolean doStatistics;
     private final String poolName;
     
-    public MyThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, String poolName, boolean doStatistics, ThreadFactory myThreadFactory) {
+    public MyThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, ThreadFactory myThreadFactory,String poolName, boolean doStatistics) {
     	super(corePoolSize, maximumPoolSize, keepAliveTime, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>(), myThreadFactory);
 		this.doStatistics = doStatistics;
 		this.poolName = poolName;
     }
+    
+	public MyThreadPoolExecutor(int corePoolSize, int maximumPoolSize,
+			long keepAliveTime, TimeUnit unit,
+			BlockingQueue<Runnable> workQueue, ThreadFactory threadFactory,
+			RejectedExecutionHandler handler,String poolName, boolean doStatistics) {
+		super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue,
+				threadFactory, handler);
+		this.doStatistics = doStatistics;
+		this.poolName = poolName;
+	}
+
+	public MyThreadPoolExecutor(int corePoolSize, int maximumPoolSize,
+			long keepAliveTime, TimeUnit unit,
+			BlockingQueue<Runnable> workQueue, ThreadFactory threadFactory,String poolName, boolean doStatistics) {
+		super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue,
+				threadFactory);
+		this.doStatistics = doStatistics;
+		this.poolName = poolName;
+	}
+
+	public MyThreadPoolExecutor(int corePoolSize, int maximumPoolSize,
+			long keepAliveTime, TimeUnit unit,
+			BlockingQueue<Runnable> workQueue, RejectedExecutionHandler handler,String poolName, boolean doStatistics) {
+		super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, handler);
+		this.doStatistics = doStatistics;
+		this.poolName = poolName;
+	}
+
+	public MyThreadPoolExecutor(int corePoolSize, int maximumPoolSize,
+			long keepAliveTime, TimeUnit unit, BlockingQueue<Runnable> workQueue,String poolName, boolean doStatistics) {
+		super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue);
+		this.doStatistics = doStatistics;
+		this.poolName = poolName;
+	}
     
 	protected void afterExecute(Runnable runnable, Throwable throwable) {
         super.afterExecute(runnable, throwable);

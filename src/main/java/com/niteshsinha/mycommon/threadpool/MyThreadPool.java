@@ -18,12 +18,12 @@ public class MyThreadPool {
 		if(logger.isDebugEnabled()){
     		logger.debug("Inside contructor: poolName:" + poolName);
     	}
-		threadPoolExecutor = new MyThreadPoolExecutor(corePoolSize, maximumPoolSize, keepAliveTime, poolName, doStatistics, new MyThreadPoolFactory(poolName));
+		threadPoolExecutor = new MyThreadPoolExecutor(corePoolSize, maximumPoolSize, keepAliveTime, new MyThreadPoolFactory(poolName), poolName, doStatistics);
 	}
 	
 	public Future<?> submit(ITask task) {
 		if(logger.isDebugEnabled()){
-    		logger.debug("Inside submit: " + String.valueOf(task));
+    		//logger.debug("Inside submit: " + String.valueOf(task));
     	}
 
 		/**

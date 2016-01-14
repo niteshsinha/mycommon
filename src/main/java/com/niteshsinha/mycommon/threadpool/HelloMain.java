@@ -6,7 +6,7 @@ import com.niteshsinha.mycommon.logging.BaseLoggerProvider;
 
 public class HelloMain {
 	
-	static Logger logger = BaseLoggerProvider.getLogger(HelloMain.class);
+	private static Logger logger = BaseLoggerProvider.getLogger(HelloMain.class);
 	
 	public static void main(String args []) {
 		
@@ -29,6 +29,10 @@ public class HelloMain {
 		} else {
 			logger.warn("All Worker Threads Busy. No idle threads");
 		}
+		
+		logger.info("Active Thread Count:" + MyThreadPoolExecutorManager.getInstance().getActiveThreadsCount());
+		logger.info("Max Thread Count: "+MyThreadPoolExecutorManager.getInstance().getMaxPoolThreadsCount());
+		MyThreadPoolExecutorManager.getInstance().shutDownThreadPool();
 		
 	}
 }

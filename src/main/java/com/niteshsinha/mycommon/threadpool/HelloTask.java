@@ -14,15 +14,18 @@ public class HelloTask implements ITask {
 
 	public void run() {
 		// TODO Auto-generated method stub
-		logger.info("Inside Run..");
-		Long duration = (long) (Math.random() * 10);
-        System.out.println("Doing a task during HelloTask at: "+ System.nanoTime());
+		//logger.info("Inside Run..");
+		//Long duration = (long) (Math.random() * 10);
+		Long duration = 5l;
+		logger.info("Duration: "+duration);
+        //System.out.println("Doing a task during HelloTask at: "+ System.nanoTime());
         try {
 			TimeUnit.SECONDS.sleep(duration);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+        logger.info("Completed");
 		
 	}
 
@@ -51,4 +54,7 @@ public class HelloTask implements ITask {
 		
 	}
 	
+	public String toString(){
+		return "Nitesh";
+	}
 }
