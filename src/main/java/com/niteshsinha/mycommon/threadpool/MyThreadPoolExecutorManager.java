@@ -2,6 +2,8 @@ package com.niteshsinha.mycommon.threadpool;
 
 import java.util.Properties;
 import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 
@@ -16,6 +18,8 @@ public class MyThreadPoolExecutorManager {
 	static Logger logger = BaseLoggerProvider.getLogger(MyThreadPoolExecutorManager.class);
 	
 	private static final int IMMEDIATE_POOL_ONLY=1;
+	private static final int SCHEDULED_POOL_ONLY =2;
+	private static final int IMMEDIATE_AND_SCHEDULED_POOL=3;
 	private static final String DEFAULT_CONFIG_FILENAME="mythreadpoolconfig.properties";
 	
 	private final int threadPoolType;
@@ -27,6 +31,7 @@ public class MyThreadPoolExecutorManager {
 	
 	private final static MyThreadPoolExecutorManager instance = new MyThreadPoolExecutorManager();
 	private final MyThreadPool threadPoolExecutor;
+	private final MyScheduleThreadPool scheduledThreadPoolExecutor;
 	
 	private MyThreadPoolExecutorManager() {
 		
@@ -36,15 +41,28 @@ public class MyThreadPoolExecutorManager {
 			public MyThreadPoolConfig createConfig(Properties properties) {
 				return new MyThreadPoolConfig(properties);
 			}
-			
 		});
+		
 		this.myThreadPoolConfig = this.configManager.getConfig();
 		logger.info("My Thread Pool Config : " + String.valueOf(this.myThreadPoolConfig));
-		//threadPoolExecutor = new MyThreadPool(25, 50, 60, "MY_TP", true);
-		threadPoolExecutor = new MyThreadPool(this.myThreadPoolConfig.getThreadPoolCoreSize(),
-				this.myThreadPoolConfig.getThreadPoolMaxSize(), 
-				0l, this.myThreadPoolConfig.getImmediateThreadPoolName(), true);
-		threadPoolType = IMMEDIATE_POOL_ONLY;
+		
+		this.threadPoolType = this.myThreadPoolConfig.getThreadPoolType();
+		
+		if (this.threadPoolType == IMMEDIATE_POOL_ONLY || this.threadPoolType == IMMEDIATE_AND_SCHEDULED_POOL){
+			threadPoolExecutor = new MyThreadPool(this.myThreadPoolConfig.getThreadPoolCoreSize(),
+					this.myThreadPoolConfig.getThreadPoolMaxSize(), 
+					0l, this.myThreadPoolConfig.getImmediateThreadPoolName(), true);
+		} else {
+			threadPoolExecutor = null;
+		}
+		
+		if (this.threadPoolType == SCHEDULED_POOL_ONLY || this.threadPoolType == IMMEDIATE_AND_SCHEDULED_POOL){
+			scheduledThreadPoolExecutor = new MyScheduleThreadPool(this.myThreadPoolConfig.getScheduledThreadPoolCoreSize(),
+					this.myThreadPoolConfig.getScheduledThreadPoolName(),
+					this.myThreadPoolConfig.isTPStatisticsEnabled());
+		} else {
+			scheduledThreadPoolExecutor = null;
+		} 
 	}
 	
 	private String getConfigFileName() {
@@ -108,4 +126,44 @@ public class MyThreadPoolExecutorManager {
         }
         return count;        
     }
+	
+	public ScheduledFuture<?> schedule(ITask task, long delay, TimeUnit unit) {
+		if (scheduledThreadPoolExecutor != null){
+			return scheduledThreadPoolExecutor.schedule(task, delay, unit);
+		}else{
+			throw new IllegalStateException("Scheduled thread pool not initialized.PoolType:" + threadPoolType);
+		}
+	}
+
+	public ScheduledFuture<?> scheduleWithFixedDelay(ITask task, long initialDelay, long delay, TimeUnit unit) {
+		if (scheduledThreadPoolExecutor != null){
+			return scheduledThreadPoolExecutor.scheduleWithFixedDelay(task, initialDelay, delay, unit);
+		}else{
+			throw new IllegalStateException("Scheduled thread pool not initialized.PoolType:" + threadPoolType);
+		}
+	}
+	
+	public ScheduledFuture<?> scheduleAtFixedRate(ITask task, long initialDelay, long delay, TimeUnit unit) {
+		if (scheduledThreadPoolExecutor != null){
+			return scheduledThreadPoolExecutor.scheduleAtFixedRate(task, initialDelay, delay, unit);
+		}else{
+			throw new IllegalStateException("Scheduled thread pool not initialized.PoolType:" + threadPoolType);
+		}
+	}
+
+	public void shutDownScheduledThreadPool(){
+		if (scheduledThreadPoolExecutor != null){
+			scheduledThreadPoolExecutor.shutdown();
+		}else{
+			logger.info("Scheduled threadpool was not running, so no need to stop.PoolType:" + threadPoolType);
+		}
+	}
+
+	public void shutDownScheduledThreadPoolNow(){
+		if (scheduledThreadPoolExecutor != null){
+			scheduledThreadPoolExecutor.shutdownNow();
+		}else{
+			logger.info("Scheduled threadpool was not running, so no need to stop.PoolType:" + threadPoolType);
+		}
+	}
 }
