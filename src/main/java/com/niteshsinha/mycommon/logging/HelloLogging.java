@@ -5,7 +5,7 @@ import org.slf4j.LoggerFactory;
 
 public class HelloLogging {
 
-	public static Logger logger = LoggerFactory.getLogger(HelloLogging.class);
+	public static final Logger logger = LoggerFactory.getLogger(HelloLogging.class);
 	
 	public static void main(String args[]) {
 		
